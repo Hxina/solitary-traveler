@@ -1,0 +1,47 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { getCollection } from "astro:content";
+
+const places = (await getCollection("places")).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
+);
+---
+
+<Layout title="行旅手记 | 地方">
+  <section class="container page-hero">
+    <p class="eyebrow">PLACES</p>
+    <h1>有些地方，去过就不会忘</h1>
+  </section>
+
+  {
+    places.length > 0 ? (
+      <section class="archive container">
+        {places.map((place) => (
+          <article class="archive-item">
+            <div>
+              <h2>
+                <a href={`/places/${place.id}/`}>{place.data.title}</a>
+              </h2>
+
+              <p>{place.data.description}</p>
+            </div>
+
+            <div class="archive-date">{place.data.season ?? "TRAVEL NOTE"}</div>
+          </article>
+        ))}
+      </section>
+    ) : (
+      <section class="empty-state container">
+        <div class="empty-line" />
+
+        <div class="empty-content">
+          <p class="empty-title">还没有去过什么地方。</p>
+
+          <p class="empty-description">路还在继续。</p>
+        </div>
+
+        <div class="empty-line" />
+      </section>
+    )
+  }
+</Layout>

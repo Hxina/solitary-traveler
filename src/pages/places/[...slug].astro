@@ -1,0 +1,50 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { getCollection, render } from "astro:content";
+
+export async function getStaticPaths() {
+  const places = await getCollection("places");
+  return places.map((place) => ({
+    params: { slug: place.id },
+    props: { place },
+  }));
+}
+
+const formatDate = (date: Date) =>
+  date
+    .toLocaleDateString("zh-CN", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    })
+    .replaceAll("/", "-");
+
+const { place } = Astro.props;
+const { Content } = await render(place);
+---
+
+<Layout
+  title={`行旅手记 | 地方 · ${place.data.title}`}
+  description={place.data.description}
+>
+  <section class="container page-hero">
+    <p class="eyebrow">PLACE / JOURNEY</p>
+    <h1>{place.data.title}</h1>
+    <div class="page-meta">
+      <span>{formatDate(place.data.date)}</span>
+      {place.data.season && <span>{place.data.season}</span>}
+    </div>
+  </section>
+
+  <article class="article">
+    {
+      place.data.cover && (
+        <div class="article-cover">
+          <img src={place.data.cover} alt={place.data.title} />
+        </div>
+      )
+    }
+    <div class="article-body"><Content /></div>
+    <a class="back-link" href="/places/">← 返回地方</a>
+  </article>
+</Layout>

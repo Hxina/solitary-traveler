@@ -1,0 +1,56 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { getCollection } from "astro:content";
+
+const notes = (await getCollection("notes")).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
+);
+
+const formatDate = (date: Date) =>
+  date
+    .toLocaleDateString("zh-CN", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    })
+    .replaceAll("/", "-");
+---
+
+<Layout title="行旅手记 | 随笔">
+  <section class="container page-hero">
+    <p class="eyebrow">TRAVEL NOTES</p>
+    <h1>走过的路，留下的字</h1>
+  </section>
+
+  {
+    notes.length > 0 ? (
+      <section class="archive container">
+        {notes.map((note) => (
+          <article class="archive-item">
+            <div>
+              <h2>
+                <a href={`/notes/${note.id}/`}>{note.data.title}</a>
+              </h2>
+
+              <p>{note.data.description}</p>
+            </div>
+
+            <div class="archive-date">{formatDate(note.data.date)}</div>
+          </article>
+        ))}
+      </section>
+    ) : (
+      <section class="empty-state container">
+        <div class="empty-line" />
+
+        <div class="empty-content">
+          <p class="empty-title">还没有留下什么。</p>
+
+          <p class="empty-description">下一段记忆，就在笔下。</p>
+        </div>
+
+        <div class="empty-line" />
+      </section>
+    )
+  }
+</Layout>

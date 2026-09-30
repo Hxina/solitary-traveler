@@ -1,0 +1,153 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { getCollection } from "astro:content";
+
+const notes = (await getCollection("notes"))
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .slice(0, 3);
+
+const places = (await getCollection("places"))
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .slice(0, 3);
+
+const formatDate = (date: Date) =>
+  date
+    .toLocaleDateString("zh-CN", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    })
+    .replaceAll("/", "-");
+---
+
+<Layout title="行旅手记 | Solitary Traveler">
+  <section class="hero container">
+    <div>
+      <p class="eyebrow">A LONELY TRAVELER · PRIVATE NOTES</p>
+
+      <h1>我只是一个<br /><span>不停的旅人</span></h1>
+
+      <p class="lead">
+        没有目的地，也不急着抵达哪里，走过一些城市，看过一些山河，在陌生的街道上停留，又在某个清晨悄悄离开。
+      </p>
+
+      <div class="hero-actions">
+        <a class="button primary" href="/notes/">翻翻记录</a>
+        <a class="button ghost" href="/places/">看看去过的地方</a>
+      </div>
+    </div>
+
+    <div class="travel-card">
+      <div class="photo">
+        <div class="photo-copy">
+          <div class="photo-place">雾里的山</div>
+          <div class="photo-date">晚秋 · 2026</div>
+        </div>
+      </div>
+
+      <p class="card-caption">有些风景没有名字，却值得记下来。</p>
+    </div>
+  </section>
+
+  <section class="section container">
+    <div class="section-label">01 / 关于</div>
+
+    <div class="section-grid">
+      <div>
+        <h2>这里没有什么特别，<br />只是恰好有人路过。</h2>
+      </div>
+
+      <div class="text-stack">
+        <p>
+          我喜欢一个人走路，一个人坐车，一个人坐在陌生城市的街角，有时候看天，有时候看人，有时候只是安静地待着。
+        </p>
+
+        <p>
+          于是有了这个地方，把路上的四季流转、人海浮沉，以及那些说不清楚的心情，一点一点留下来。
+        </p>
+
+        <p>
+          不为了证明去过哪里，也没有什么需要别人记住的故事，只是害怕有一天回头的时候，已经忘了那些曾经看见过的东西。
+        </p>
+      </div>
+    </div>
+  </section>
+
+  {
+    notes.length > 0 && (
+      <section class="section container">
+        <div class="section-label">02 / 留下的随笔</div>
+
+        <div class="entries">
+          {notes.map((note) => (
+            <article class="entry">
+              <div class="entry-date">{formatDate(note.data.date)}</div>
+
+              <div>
+                <h3>
+                  <a href={`/notes/${note.id}/`}>{note.data.title}</a>
+                </h3>
+
+                <p>{note.data.description}</p>
+              </div>
+
+              <span class="arrow">↗</span>
+            </article>
+          ))}
+        </div>
+
+        <a class="back-link" href="/notes/">
+          查看全部随笔 →
+        </a>
+      </section>
+    )
+  }
+
+  {
+    places.length > 0 && (
+      <section class="section container">
+        <div class="section-label">03 / 去过的地方</div>
+
+        <div class="places-grid">
+          {places.map((place, index) => (
+            <article class="place">
+              <span class="place-number">
+                {String(index + 1).padStart(2, "0")}
+              </span>
+
+              <h3>
+                <a href={`/places/${place.id}/`}>{place.data.title}</a>
+              </h3>
+
+              <p>{place.data.description}</p>
+
+              <span class="place-meta">
+                {place.data.season ?? "TRAVEL NOTE"}
+              </span>
+            </article>
+          ))}
+        </div>
+
+        <a class="back-link" href="/places/">
+          查看全部地方 →
+        </a>
+      </section>
+    )
+  }
+
+  <section class="section container">
+    <div class="quote-box">
+      <div>
+        <h2>下一站在哪里，其实并不重要。</h2>
+
+        <p>
+          路还很长，也许明天会去一个从未听说过名字的地方，也许只是待在屋里看雨。<br
+          />
+          无论怎样，继续走就是了，累了就休息一下，然后继续向前。
+        </p>
+      </div>
+
+      <div class="quote-mark">”</div>
+    </div>
+  </section>
+</Layout>

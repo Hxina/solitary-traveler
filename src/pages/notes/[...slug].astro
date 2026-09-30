@@ -1,0 +1,50 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { getCollection, render } from "astro:content";
+
+export async function getStaticPaths() {
+  const notes = await getCollection("notes");
+  return notes.map((note) => ({
+    params: { slug: note.id },
+    props: { note },
+  }));
+}
+
+const formatDate = (date: Date) =>
+  date
+    .toLocaleDateString("zh-CN", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    })
+    .replaceAll("/", "-");
+
+const { note } = Astro.props;
+const { Content } = await render(note);
+---
+
+<Layout
+  title={`行旅手记 | 随笔 · ${note.data.title}`}
+  description={note.data.description}
+>
+  <section class="container page-hero">
+    <p class="eyebrow">NOTE / TRAVEL</p>
+    <h1>{note.data.title}</h1>
+    <div class="page-meta">
+      <span>{formatDate(note.data.date)} </span>
+      {note.data.place && <span>{note.data.place}</span>}
+    </div>
+  </section>
+
+  <article class="article">
+    {
+      note.data.cover && (
+        <div class="article-cover">
+          <img src={note.data.cover} alt={note.data.title} />
+        </div>
+      )
+    }
+    <div class="article-body"><Content /></div>
+    <a class="back-link" href="/notes/">← 返回随笔</a>
+  </article>
+</Layout>
