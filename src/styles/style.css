@@ -389,6 +389,14 @@ nav a:hover {
     gap: 20px
 }
 
+.footer-project {
+    transition: color 0.2s ease;
+}
+
+.footer-project:hover {
+    color: var(--accent);
+}
+
 .page-hero {
     padding: 100px 0 60px
 }

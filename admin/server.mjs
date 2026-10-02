@@ -560,6 +560,14 @@ function layout(title, body) {
         justify-content: space-between;
         gap: 20px;
       }
+    
+      .footer-project {
+        transition: color 0.2s ease;
+      }
+
+      .footer-project:hover {
+        color: var(--accent);
+      }
 
       .date-picker {
         position: relative;
@@ -743,7 +751,15 @@ function layout(title, body) {
 
     <footer class="site-footer">
       <div class="footer-wrap">
-        <span>© ${currentYear === 2026 ? "2026" : `2026–${currentYear}`} · 行旅手记 · Solitary Traveler</span>
+      <span>
+        © ${currentYear === 2026 ? "2026" : `2026–${currentYear}`} ·
+        <a
+          class="footer-project"
+          href="https://github.com/Hxina/solitary-traveler"
+          target="_blank"
+          rel="noopener noreferrer"
+        >行旅手记 · Solitary Traveler</a>
+        </span>
         <span>走过的路、遇见的人、眼中的世界</span>
       </div>
     </footer>
@@ -799,6 +815,7 @@ function loginPage(error = "") {
       .login-content {
         width: min(calc(100% - 36px), 420px);
         margin: 0 auto;
+        transform: translateY(clamp(-48px, -5vh, -24px));
       }
 
       .brand {
