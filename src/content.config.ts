@@ -1,11 +1,16 @@
 import { defineCollection } from 'astro:content';
 import { glob } from 'astro/loaders';
 import { z } from 'astro/zod';
+import { resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 const contentRoot = process.env.SOLITARY_CONTENT_ROOT || './src/content';
 
 const notes = defineCollection({
-  loader: glob({ base: `${contentRoot}/notes`, pattern: '**/*.{md,mdx}' }),
+  loader: glob({
+    base: pathToFileURL(resolve(contentRoot, 'notes')),
+    pattern: '**/*.{md,mdx}',
+  }),
   schema: z.object({
     title: z.string(),
     date: z.coerce.date(),
@@ -17,7 +22,10 @@ const notes = defineCollection({
 });
 
 const places = defineCollection({
-  loader: glob({ base: `${contentRoot}/places`, pattern: '**/*.{md,mdx}' }),
+  loader: glob({
+    base: pathToFileURL(resolve(contentRoot, 'places')),
+    pattern: '**/*.{md,mdx}',
+  }),
   schema: z.object({
     title: z.string(),
     date: z.coerce.date(),
