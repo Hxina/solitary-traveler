@@ -1,7 +1,7 @@
 import http from "node:http";
 import { execFile, spawn } from "node:child_process";
 import { promisify } from "node:util";
-import { readFile, writeFile, mkdir, unlink, access } from "node:fs/promises";
+import { readFile, writeFile, mkdir, unlink, access, readdir } from "node:fs/promises";
 import path from "node:path";
 import crypto from "node:crypto";
 import { fileURLToPath } from "node:url";
@@ -702,7 +702,7 @@ function dashboard() {
 async function listEntries(kind) {
   const dir = collectionDir(kind);
   await mkdir(dir, { recursive: true });
-  const files = (await import("node:fs/promises")).readdir(dir);
+  const files = await readdir(dir);
   const result = [];
   for (const file of files) {
     if (!file.endsWith(".md")) continue;
