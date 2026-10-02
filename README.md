@@ -81,13 +81,35 @@ npm run preview
 
 ### 本地运行管理后台
 
-运行以下命令行，根据提示输入密码，生成密码哈希：
+管理后台需要配置管理员用户名、密码哈希和会话密钥。
+
+可以使用项目提供的配置生成工具：
 
 ```bash
 npm run admin:password
 ```
 
-再设置后台环境变量，PowerShell 示例：
+运行后按照提示输入管理员用户名和密码：
+
+```bash
+请输入管理员用户名 [默认：admin]：
+请输入管理员密码：
+请再次输入管理员密码：
+```
+
+用户名直接回车时使用默认用户名 admin，密码需要输入两次，两次输入必须一致。
+
+生成完成后，会自动生成以下三项配置：
+
+```bash
+ADMIN_USERNAME=...
+ADMIN_PASSWORD_HASH=...
+SESSION_SECRET=...
+```
+
+将生成的三项配置复制到环境变量中。
+
+本地 Windows PowerShell 配置示例：
 
 ```powershell
 $env:ADMIN_HOST='127.0.0.1'
@@ -108,7 +130,9 @@ npm run admin
 
 ### 随笔
 
-本地开发时，内容放在 `src/content/notes/`，例如 `随笔示例.md`：
+本地开发时，内容放在 `src/content/notes/`，例如 `src/content/notes/随笔示例.md`
+
+内容格式：
 
 ```md
 ---
@@ -122,9 +146,20 @@ place: 这是地点
 这里写随笔具体内容。
 ```
 
+其中：
+
+- `title`：标题；
+- `date`：日期，格式为 YYYY-MM-DD，如 2026-10-01；
+- `description`：简短描述；
+- `type`：固定为 note；
+- `place`：地点，可选。
+
 ### 地方
 
-地方记录放在 `src/content/places/`，例如 `地方示例.md`：
+地方记录放在 `src/content/places/`，例如 `src/content/places/地方示例.md
+`。
+
+内容格式：
 
 ```md
 ---
@@ -137,6 +172,18 @@ season: 这是季节
 
 这里写关于这个地方的记录。
 ```
+
+其中：
+
+- `title`：标题；
+- `date`：日期，格式为 YYYY-MM-DD；
+- `description`：简短描述；
+- `type`：固定为 place；
+- `season`：季节或标签，可选。
+
+管理后台中的 `链接标识` 用于生成 Markdown 内容文件名，仅允许使用 `中文`、`英文`、`数字`、`短横线（-）` 以及 `下划线（_）`。
+
+> 新建内容时不能使用已经存在的链接标识。
 
 ### 生产环境的私人内容
 
@@ -156,9 +203,7 @@ season: 这是季节
 
 下面以 Debian + Caddy + systemd 为例，介绍生产环境的核心部署方式。
 
-项目推荐使用独立系统用户 `solitary-traveler`。
-
-生产环境目录：
+项目推荐使用独立系统用户 `solitary-traveler`，生产环境目录：
 
 - `/opt/solitary-traveler` GitHub 项目源码。
 - `/var/lib/solitary-traveler/content` 私人随笔、地方记录和私人图片。
@@ -205,7 +250,7 @@ Caddy
 www.4131029.xyz  A/AAAA      <IPv4/IPv6 地址>
 ```
 
-公网至少开放：
+公网至少开放以下端口：
 
 ```text
 TCP 22     SSH
@@ -221,17 +266,11 @@ TCP 443    HTTPS
 
 ```bash
 sudo adduser --system --group --home /opt/solitary-traveler solitary-traveler
-
 sudo mkdir -p /opt/solitary-traveler
-
 sudo mkdir -p /var/lib/solitary-traveler/content/notes
-
 sudo mkdir -p /var/lib/solitary-traveler/content/places
-
 sudo mkdir -p /var/www/solitary-traveler
-
 sudo mkdir -p /etc/solitary-traveler
-
 sudo chown -R solitary-traveler:solitary-traveler \
   /opt/solitary-traveler \
   /var/lib/solitary-traveler \
@@ -246,7 +285,6 @@ sudo -u solitary-traveler git clone \
   /opt/solitary-traveler
 
 cd /opt/solitary-traveler
-
 sudo -u solitary-traveler npm ci
 ```
 
@@ -254,9 +292,7 @@ sudo -u solitary-traveler npm ci
 
 ```bash
 cd /opt/solitary-traveler
-
 sudo -u solitary-traveler git pull --ff-only
-
 sudo -u solitary-traveler npm ci
 ```
 
@@ -283,25 +319,39 @@ SESSION_SECRET=...
 ADMIN_COOKIE_SECURE=true
 ```
 
-生成 `ADMIN_PASSWORD_HASH`：
+其中：
+
+- `ADMIN_USERNAME`：管理员登录用户名；
+- `ADMIN_PASSWORD_HASH`：管理员密码的 scrypt 哈希；
+- `SESSION_SECRET`：用于签名登录会话的随机密钥。
+
+**生成管理员配置**
+
+进入项目目录：
 
 ```bash
 cd /opt/solitary-traveler
+```
 
+运行命令：
+```bash
 sudo -u solitary-traveler npm run admin:password
 ```
 
-生成 `SESSION_SECRET`：
+按照提示输入管理员用户名和密码，工具会自动生成：
 
 ```bash
-openssl rand -hex 32
+ADMIN_USERNAME=...
+ADMIN_PASSWORD_HASH=...
+SESSION_SECRET=...
 ```
 
-修改环境变量文件权限：
+将生成的三项配置复制到 `/etc/solitary-traveler/admin.env` 即可。
+
+**修改环境变量文件权限**：
 
 ```bash
 sudo chown root:root /etc/solitary-traveler/admin.env
-
 sudo chmod 600 /etc/solitary-traveler/admin.env
 ```
 
@@ -319,7 +369,6 @@ sudo chmod 600 /etc/solitary-traveler/admin.env
 
 ```bash
 cd /opt/solitary-traveler
-
 sudo -u solitary-traveler env \
   SOLITARY_CONTENT_ROOT=/var/lib/solitary-traveler/content \
   PROJECT_ROOT=/opt/solitary-traveler \
@@ -342,9 +391,7 @@ sudo -u solitary-traveler rsync -az --delete \
 ```bash
 sudo cp /opt/solitary-traveler/deploy/solitary-traveler-admin.service \
   /etc/systemd/system/solitary-traveler-admin.service
-
 sudo systemctl daemon-reload
-
 sudo systemctl enable --now solitary-traveler-admin
 ```
 
@@ -360,7 +407,6 @@ Group=solitary-traveler
 
 ```bash
 sudo systemctl status solitary-traveler-admin
-
 sudo ss -lntp | grep 8888
 ```
 
@@ -370,7 +416,7 @@ sudo ss -lntp | grep 8888
 
 编辑 Caddyfile：
 
-```text
+```bash
 sudo nano /etc/caddy/Caddyfile
 ```
 
@@ -410,23 +456,21 @@ https://4131029.xyz/admin
 
 ### 7. 更新网站
 
-修改代码并推送 GitHub 后：
+当仓库代码有更新时，执行以下命令同步更新：
 
 ```bash
 cd /opt/solitary-traveler
-
 sudo -u solitary-traveler git pull --ff-only
-
 sudo -u solitary-traveler npm ci
 ```
 
-后台代码有变化时：
+后台代码有变化时，执行以下命令重启服务：
 
 ```bash
 sudo systemctl restart solitary-traveler-admin
 ```
 
-前台代码有变化时重新构建并同步：
+前端代码有变化时执行以下命令重新构建并同步：
 
 ```bash
 sudo -u solitary-traveler env \
@@ -434,7 +478,6 @@ sudo -u solitary-traveler env \
   PROJECT_ROOT=/opt/solitary-traveler \
   SITE_ROOT=/var/www/solitary-traveler \
   npm run build
-
 sudo -u solitary-traveler rsync -az --delete \
   /opt/solitary-traveler/dist/ \
   /var/www/solitary-traveler/
@@ -446,7 +489,6 @@ sudo -u solitary-traveler rsync -az --delete \
 
 ```bash
 sudo systemctl status solitary-traveler-admin
-
 sudo journalctl -u solitary-traveler-admin -n 100 --no-pager
 ```
 
@@ -454,7 +496,6 @@ Caddy：
 
 ```bash
 sudo systemctl status caddy
-
 sudo journalctl -u caddy -n 100 --no-pager
 ```
 
